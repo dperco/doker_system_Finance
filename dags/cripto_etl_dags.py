@@ -11,7 +11,7 @@
 # db_config = {
 #     'host': 'host.docker.internal',  # Usar 'host.docker.internal' para acceder al host desde Docker
 #     'usuario': 'root',
-#     'contraseña': 'Zaq12wsx.',
+#     'contraseña': '',
 #     'base_de_datos': 'cripto_db'
 # }
 
