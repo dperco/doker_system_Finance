@@ -87,7 +87,7 @@ db_config = {
 
 # Funciones para las tareas
 def extract():
-    return fetch_stock_data(symbol='IBM', api_key='')
+    return fetch_stock_data(symbol='IBM', api_key='M8CE40RXB83NIGTY')
 
 def transform(**kwargs):
     ti = kwargs['ti']

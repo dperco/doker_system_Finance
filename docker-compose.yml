@@ -1,6 +1,8 @@
 # docker-compose.yml
 
 
+
+
 services:
   mysql:
     image: mysql:8.0
@@ -8,8 +10,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Zaq12wsx.
       MYSQL_DATABASE: cripto_db
-      # MYSQL_USER: root
-      # MYSQL_PASSWORD: Zaq12wsx.
     ports:
       - "3307:3306"
     volumes:
@@ -21,6 +21,7 @@ services:
       retries: 5
 
   webserver:
+    image: apache/airflow:2.6.3
     build: .
     ports:
       - "8080:8080"
@@ -28,9 +29,16 @@ services:
       - ./dags:/opt/airflow/dags
       - ./scripts:/opt/airflow/scripts
     environment:
-      -  AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://root:Zaq12wsx.@mysql:3306/cripto_db
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://root:Zaq12wsx.@mysql:3306/cripto_db
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    command: webserver
+      - AIRFLOW__WEBSERVER__SECRET_KEY=''
+      - TZ=UTC
+      - NTP_SERVER=pool.ntp.org
+    command: >
+      bash -c "
+      pip install --user -r /opt/airflow/requirements.txt &&
+      airflow webserver
+      "
     healthcheck:
       test: ["CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]"]
       interval: 30s
@@ -41,6 +49,7 @@ services:
         condition: service_healthy
 
   scheduler:
+    image: apache/airflow:2.6.3
     build: .
     volumes:
       - ./dags:/opt/airflow/dags
@@ -48,11 +57,44 @@ services:
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://root:Zaq12wsx.@mysql:3306/cripto_db
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    command: scheduler
+      - AIRFLOW__SCHEDULER__SECRET_KEY=''
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - TZ=UTC
+      - NTP_SERVER=pool.ntp.org
+    command: >
+      bash -c "
+      pip install --user -r /opt/airflow/requirements.txt &&
+      airflow scheduler
+      "
     depends_on:
       mysql:
         condition: service_healthy
       webserver:
+        condition: service_healthy
+
+  worker:
+    image: apache/airflow:2.6.3
+    build: .
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqlconnector://root:Zaq12wsx.@mysql:3306/cripto_db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=''
+      - TZ=UTC
+      - NTP_SERVER=pool.ntp.org
+    command: >
+      bash -c "
+      pip install --user -r /opt/airflow/requirements.txt &&
+      airflow celery worker
+      "
+    depends_on:
+      mysql:
+        condition: service_healthy
+      webserver:
+        condition: service_healthy
+      scheduler:
         condition: service_healthy
 
 volumes:
