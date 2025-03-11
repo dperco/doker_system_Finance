@@ -11,7 +11,7 @@
 # db_config = {
 #     'host': 'host.docker.internal',  # Usar 'host.docker.internal' para acceder al host desde Docker
 #     'usuario': 'root',
-#     'contraseña': 'Zaq12wsx.',
+#     'contraseña': '',
 #     'base_de_datos': 'cripto_db'
 # }
 
@@ -87,7 +87,7 @@ db_config = {
 
 # Funciones para las tareas
 def extract():
-    return fetch_stock_data(symbol='IBM', api_key='M8CE40RXB83NIGTY')
+    return fetch_stock_data(symbol='IBM', api_key='')
 
 def transform(**kwargs):
     ti = kwargs['ti']
